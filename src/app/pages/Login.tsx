@@ -15,16 +15,18 @@ export default function Login() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     sessionStorage.setItem("userRole", role || "");
-    // Supplier has its own onboarding flow inside the dashboard
+    // Supplier & Receiver have their own onboarding flow inside the dashboard
     if (role === "supplier") {
       navigate("/dashboard/supplier");
+    } else if (role === "receiver") {
+      navigate("/dashboard/receiver");
     } else {
       navigate("/order-entry");
     }
   };
 
   const getRoleTitle = () => {
-    return role?.split("-").map(word => 
+    return role?.split("-").map(word =>
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(" ");
   };
@@ -32,7 +34,7 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
-      
+
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}

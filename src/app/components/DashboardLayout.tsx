@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import {
   Bell, User, LogOut, Home, Package, Settings, BarChart3, Menu, X,
   Warehouse, AlertTriangle, Truck, PackageCheck, ShoppingCart, PlusCircle,
-  ChevronDown, Mail, Clock, Check, Boxes, Users,
+  ChevronDown, Mail, Clock, Check, Boxes, Users, ShoppingBag,
 } from "lucide-react";
 import { Button } from "./ui/button";
 
@@ -48,6 +48,11 @@ const supplierMenu = [
   { icon: Home, label: "Dashboard", id: "dashboard" },
   { icon: Warehouse, label: "Warehouses", id: "warehouses" },
   { icon: Users, label: "Receivers", id: "receivers" },
+];
+const receiverMenu = [
+  { icon: Home, label: "Dashboard", id: "dashboard" },
+  { icon: Warehouse, label: "Warehouses", id: "warehouses" },
+  { icon: ShoppingBag, label: "Suppliers", id: "suppliers" },
 ];
 const defaultMenu = [
   { icon: Home, label: "Dashboard", id: "dashboard" },
@@ -99,7 +104,7 @@ export default function DashboardLayout({ children, role, orderId, activeMenu: c
   useClickOutside(notifRef, () => setNotifOpen(false));
 
   const unreadCount = notifications.filter((n) => !n.read).length;
-  const menuItems = isWarehouse ? warehouseMenu : role === "supplier" ? supplierMenu : defaultMenu;
+  const menuItems = isWarehouse ? warehouseMenu : role === "supplier" ? supplierMenu : role === "receiver" ? receiverMenu : defaultMenu;
 
   const getRoleTitle = () => role.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
   const handleLogout = () => { sessionStorage.clear(); navigate("/"); };
@@ -204,16 +209,18 @@ export default function DashboardLayout({ children, role, orderId, activeMenu: c
                         {unreadCount > 0 && <button onClick={markAllRead} className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"><Check className="w-3 h-3" /> Mark all read</button>}
                       </div>
                       <div className="max-h-80 overflow-y-auto">
-                        {notifications.map((n) => { const NI = n.icon; return (
-                          <button key={n.id} onClick={() => markRead(n.id)} className={`w-full flex items-start gap-3 p-4 hover:bg-white/[0.03] transition-all text-left border-b border-white/5 last:border-0 ${!n.read ? "bg-blue-500/[0.04]" : ""}`}>
-                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${n.iconColor}`}><NI className="w-4 h-4" /></div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2"><p className={`text-sm font-medium truncate ${n.read ? "text-white/70" : "text-white"}`}>{n.title}</p>{!n.read && <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />}</div>
-                              <p className="text-xs text-blue-200/40 mt-0.5 line-clamp-2">{n.message}</p>
-                              <div className="flex items-center gap-1 mt-1"><Clock className="w-3 h-3 text-blue-200/25" /><span className="text-[10px] text-blue-200/25">{n.time}</span></div>
-                            </div>
-                          </button>
-                        ); })}
+                        {notifications.map((n) => {
+                          const NI = n.icon; return (
+                            <button key={n.id} onClick={() => markRead(n.id)} className={`w-full flex items-start gap-3 p-4 hover:bg-white/[0.03] transition-all text-left border-b border-white/5 last:border-0 ${!n.read ? "bg-blue-500/[0.04]" : ""}`}>
+                              <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${n.iconColor}`}><NI className="w-4 h-4" /></div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2"><p className={`text-sm font-medium truncate ${n.read ? "text-white/70" : "text-white"}`}>{n.title}</p>{!n.read && <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />}</div>
+                                <p className="text-xs text-blue-200/40 mt-0.5 line-clamp-2">{n.message}</p>
+                                <div className="flex items-center gap-1 mt-1"><Clock className="w-3 h-3 text-blue-200/25" /><span className="text-[10px] text-blue-200/25">{n.time}</span></div>
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
                       <div className="p-3 border-t border-white/10"><button className="w-full text-center text-xs text-blue-400 hover:text-blue-300 transition-colors py-1.5 rounded-lg hover:bg-white/[0.03]">View all notifications</button></div>
                     </motion.div>
