@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from "motion/react";
 import DashboardLayout from "../../components/DashboardLayout";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import {
   Truck, CheckCircle2, AlertCircle, MapPin, Phone,
   Star, Package, CloudRain, TrafficCone,
   ArrowRight, ChevronRight, TrendingUp, Zap, Users, ShoppingBag,
+  User, Mail, Edit3, Save, Building2,
 } from "lucide-react";
 
 /* ══════════════════════════════════════
@@ -487,6 +489,152 @@ function SuppliersPage({ receiveCat }: { receiveCat: ReceiveCategory }) {
 }
 
 /* ══════════════════════════════════════
+   RECEIVER PROFILE
+   ══════════════════════════════════════ */
+function ReceiverProfilePage({ setPage }: { setPage: (p: string) => void }) {
+  const userName = sessionStorage.getItem("userName") || "Receiver User";
+  const userEmail = sessionStorage.getItem("userEmail") || "receiver@supplychain.com";
+  const receiverData = JSON.parse(sessionStorage.getItem("receiverData") || "{}");
+
+  const fields = [
+    { label: "Full Name", value: receiverData.name || userName, icon: User },
+    { label: "Email Address", value: receiverData.email || userEmail, icon: Mail },
+    { label: "Role", value: "Receiver", icon: Package },
+    { label: "Phone Number", value: receiverData.phone || "+91 98765 43210", icon: Phone },
+    { label: "Organization", value: receiverData.organization || "Supply Chain Corp.", icon: Building2 },
+    { label: "Location", value: receiverData.location || "Delhi, India", icon: MapPin },
+  ];
+
+  return (
+    <div className="space-y-6 max-w-2xl">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-white">Receiver Profile</h2>
+        <Button onClick={() => setPage("settings")} variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white">
+          <Edit3 className="w-4 h-4 mr-1.5" />Edit Profile
+        </Button>
+      </div>
+      <Card>
+        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-teal-500/25">
+            <User className="w-8 h-8 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-white">{fields[0].value}</h3>
+            <p className="text-teal-200/50 text-sm">{fields[1].value}</p>
+            <span className="inline-block mt-1 text-[10px] font-semibold bg-teal-500/15 text-teal-300 border border-teal-500/20 rounded-full px-2 py-0.5">Receiver</span>
+          </div>
+        </div>
+        <div className="space-y-4">
+          {fields.map((f) => {
+            const I = f.icon;
+            return (
+              <div key={f.label} className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center">
+                  <I className="w-4 h-4 text-teal-200/40" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-teal-200/30 uppercase tracking-wider">{f.label}</p>
+                  <p className="text-white text-sm">{f.value}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   RECEIVER SETTINGS
+   ══════════════════════════════════════ */
+function ReceiverSettingsPage() {
+  const userName = sessionStorage.getItem("userName") || "Receiver User";
+  const userEmail = sessionStorage.getItem("userEmail") || "receiver@supplychain.com";
+  const receiverData = JSON.parse(sessionStorage.getItem("receiverData") || "{}");
+
+  const [vals, setVals] = useState({
+    name: receiverData.name || userName,
+    email: receiverData.email || userEmail,
+    phone: receiverData.phone || "+91 98765 43210",
+    organization: receiverData.organization || "Supply Chain Corp.",
+    location: receiverData.location || "Delhi, India",
+    password: "",
+    confirmPassword: "",
+  });
+  const [saved, setSaved] = useState(false);
+
+  const set = (k: string, v: string) => setVals((p) => ({ ...p, [k]: v }));
+
+  const handleSave = () => {
+    const { password, confirmPassword, ...rest } = vals;
+    sessionStorage.setItem("receiverData", JSON.stringify(rest));
+    sessionStorage.setItem("userName", vals.name);
+    sessionStorage.setItem("userEmail", vals.email);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  };
+
+  const formFields = [
+    { id: "name", label: "Full Name", type: "text" },
+    { id: "email", label: "Email Address", type: "email" },
+    { id: "phone", label: "Phone Number", type: "tel" },
+    { id: "organization", label: "Organization", type: "text" },
+    { id: "location", label: "Location", type: "text" },
+  ];
+
+  const inputStyles = "bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-teal-400/50 focus:ring-teal-400/20";
+
+  return (
+    <div className="space-y-6 max-w-2xl">
+      <h2 className="text-2xl font-bold text-white">Account Settings</h2>
+      <Card>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {formFields.map((f) => (
+              <div key={f.id} className="space-y-1.5">
+                <Label className="text-white/60 text-xs">{f.label}</Label>
+                <Input
+                  type={f.type}
+                  value={(vals as Record<string, string>)[f.id]}
+                  onChange={(e) => set(f.id, e.target.value)}
+                  className={inputStyles}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-4 border-t border-white/10">
+            <p className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">Change Password</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-white/60 text-xs">New Password</Label>
+                <Input type="password" placeholder="••••••••" value={vals.password} onChange={(e) => set("password", e.target.value)} className={inputStyles} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-white/60 text-xs">Confirm Password</Label>
+                <Input type="password" placeholder="••••••••" value={vals.confirmPassword} onChange={(e) => set("confirmPassword", e.target.value)} className={inputStyles} />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 pt-2">
+            <Button onClick={handleSave} className="bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 shadow-lg shadow-teal-500/15">
+              <Save className="w-4 h-4 mr-1.5" />Save Changes
+            </Button>
+            {saved && (
+              <motion.span initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} className="text-emerald-400 text-sm flex items-center gap-1">
+                <CheckCircle2 className="w-4 h-4" /> Saved!
+              </motion.span>
+            )}
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
    MASTER DASHBOARD
    ══════════════════════════════════════ */
 export default function ReceiverDashboard() {
@@ -524,6 +672,10 @@ export default function ReceiverDashboard() {
         return <WarehousesPage receiveCat={receiveCat} />;
       case "suppliers":
         return <SuppliersPage receiveCat={receiveCat} />;
+      case "profile":
+        return <ReceiverProfilePage setPage={setActivePage} />;
+      case "settings":
+        return <ReceiverSettingsPage />;
       default:
         return shipment ? <TrackingPage shipment={shipment} orderId={orderId!} /> : null;
     }

@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from "motion/react";
 import DashboardLayout from "../../components/DashboardLayout";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
 import {
   Truck, Clock, CheckCircle2, AlertCircle, MapPin, Phone,
   Star, Package, CloudRain, TrafficCone,
   ArrowRight, ChevronRight, TrendingUp, Zap, Users,
+  User, Mail, Edit3, Save, Building2, Tag,
 } from "lucide-react";
 
 /* ══════════════════════════════════════
@@ -497,6 +499,168 @@ function ReceiversPage({ supplyCat }: { supplyCat: SupplyCategory }) {
 }
 
 /* ══════════════════════════════════════
+   SUPPLIER PROFILE
+   ══════════════════════════════════════ */
+function SupplierProfilePage({ setPage }: { setPage: (p: string) => void }) {
+  const userName   = sessionStorage.getItem("userName")  || "Supplier User";
+  const userEmail  = sessionStorage.getItem("userEmail") || "supplier@supplychain.com";
+  const supplierData = JSON.parse(sessionStorage.getItem("supplierData") || "{}");
+  const supplyCat  = sessionStorage.getItem("supplierCategory") || "electronics";
+
+  const fields = [
+    { label: "Full Name",        value: supplierData.name         || userName,                    icon: User      },
+    { label: "Email Address",    value: supplierData.email        || userEmail,                   icon: Mail      },
+    { label: "Role",             value: "Supplier",                                               icon: Package   },
+    { label: "Phone Number",     value: supplierData.phone        || "+91 98765 43210",            icon: Phone     },
+    { label: "Business Name",    value: supplierData.business     || "Supply Chain Corp.",        icon: Building2 },
+    { label: "Supply Category",  value: supplierData.category     || supplyCat,                   icon: Tag       },
+    { label: "Address",          value: supplierData.address      || "Mumbai, Maharashtra",       icon: MapPin    },
+  ];
+
+  return (
+    <div className="space-y-6 max-w-2xl">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-white">Supplier Profile</h2>
+        <Button onClick={() => setPage("settings")} variant="outline"
+          className="bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white">
+          <Edit3 className="w-4 h-4 mr-1.5" />Edit Profile
+        </Button>
+      </div>
+
+      <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10">
+        {/* Avatar row */}
+        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/25">
+            <User className="w-8 h-8 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-white">{fields[0].value}</h3>
+            <p className="text-blue-200/50 text-sm">{fields[1].value}</p>
+            <span className="inline-block mt-1 text-[10px] font-semibold bg-blue-500/15 text-blue-300 border border-blue-500/20 rounded-full px-2 py-0.5">Supplier</span>
+          </div>
+        </div>
+
+        {/* Fields */}
+        <div className="space-y-4">
+          {fields.map((f) => {
+            const I = f.icon;
+            return (
+              <div key={f.label} className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center">
+                  <I className="w-4 h-4 text-blue-200/40" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-blue-200/30 uppercase tracking-wider">{f.label}</p>
+                  <p className="text-white text-sm capitalize">{f.value}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
+   SUPPLIER SETTINGS
+   ══════════════════════════════════════ */
+function SupplierSettingsPage() {
+  const userName  = sessionStorage.getItem("userName")  || "Supplier User";
+  const userEmail = sessionStorage.getItem("userEmail") || "supplier@supplychain.com";
+  const supplierData = JSON.parse(sessionStorage.getItem("supplierData") || "{}");
+
+  const [vals, setVals] = useState({
+    name:     supplierData.name     || userName,
+    email:    supplierData.email    || userEmail,
+    phone:    supplierData.phone    || "+91 98765 43210",
+    business: supplierData.business || "Supply Chain Corp.",
+    category: supplierData.category || sessionStorage.getItem("supplierCategory") || "electronics",
+    address:  supplierData.address  || "Mumbai, Maharashtra",
+    password:        "",
+    confirmPassword: "",
+  });
+  const [saved, setSaved] = useState(false);
+
+  const set = (k: string, v: string) => setVals((p) => ({ ...p, [k]: v }));
+
+  const handleSave = () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, confirmPassword, ...rest } = vals;
+    sessionStorage.setItem("supplierData", JSON.stringify(rest));
+    sessionStorage.setItem("userName",  vals.name);
+    sessionStorage.setItem("userEmail", vals.email);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  };
+
+  const formFields = [
+    { id: "name",     label: "Full Name",       type: "text"  },
+    { id: "email",    label: "Email Address",   type: "email" },
+    { id: "phone",    label: "Phone Number",    type: "tel"   },
+    { id: "business", label: "Business Name",   type: "text"  },
+    { id: "category", label: "Supply Category", type: "text"  },
+    { id: "address",  label: "Address",         type: "text"  },
+  ];
+
+  const inputCls = "bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-blue-400/50 focus:ring-blue-400/20";
+
+  return (
+    <div className="space-y-6 max-w-2xl">
+      <h2 className="text-2xl font-bold text-white">Account Settings</h2>
+
+      <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10 space-y-4">
+        {/* Main fields */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {formFields.map((f) => (
+            <div key={f.id} className="space-y-1.5">
+              <Label className="text-white/60 text-xs">{f.label}</Label>
+              <Input
+                type={f.type}
+                value={(vals as Record<string, string>)[f.id]}
+                onChange={(e) => set(f.id, e.target.value)}
+                className={inputCls}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Password */}
+        <div className="pt-4 border-t border-white/10">
+          <p className="text-white/60 text-xs font-semibold uppercase tracking-wider mb-3">Change Password</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-white/60 text-xs">New Password</Label>
+              <Input type="password" placeholder="••••••••" value={vals.password}
+                onChange={(e) => set("password", e.target.value)} className={inputCls} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-white/60 text-xs">Confirm Password</Label>
+              <Input type="password" placeholder="••••••••" value={vals.confirmPassword}
+                onChange={(e) => set("confirmPassword", e.target.value)} className={inputCls} />
+            </div>
+          </div>
+        </div>
+
+        {/* Save */}
+        <div className="flex items-center gap-3 pt-2">
+          <Button onClick={handleSave}
+            className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-lg shadow-blue-500/15">
+            <Save className="w-4 h-4 mr-1.5" />Save Changes
+          </Button>
+          {saved && (
+            <motion.span initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+              className="text-emerald-400 text-sm flex items-center gap-1">
+              <CheckCircle2 className="w-4 h-4" /> Saved!
+            </motion.span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════
    MASTER DASHBOARD
    ══════════════════════════════════════ */
 export default function SupplierDashboard() {
@@ -524,6 +688,9 @@ export default function SupplierDashboard() {
   };
 
   const renderPage = () => {
+    /* Profile & Settings are always available regardless of shipment state */
+    if (activePage === "profile")   return <SupplierProfilePage  setPage={setActivePage} />;
+    if (activePage === "settings")  return <SupplierSettingsPage />;
     if (!shipment || !supplyCat) return null;
     switch (activePage) {
       case "dashboard":
