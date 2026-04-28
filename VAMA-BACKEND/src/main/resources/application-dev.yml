@@ -1,0 +1,6 @@
+logging:
+  level:
+    root: INFO
+    com.VAMA.VAMA_BACKEND: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.data.mongodb: DEBUG

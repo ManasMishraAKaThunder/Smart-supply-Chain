@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  # ── MongoDB ───────────────────────────────────
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: VAMA
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - vama-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Spring Boot Backend ───────────────────────
+  backend:
+    build: ./VAMA-BACKEND
+    restart: unless-stopped
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/VAMA
+      JWT_SECRET: ${JWT_SECRET:-change-this-to-a-secure-random-string-min-32-chars}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost}
+      SPRING_PROFILES_ACTIVE: prod
+    ports:
+      - "8080:8080"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - vama-net
+
+  # ── React Frontend (nginx) ────────────────────
+  frontend:
+    build:
+      context: .
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080/api}
+        VITE_WS_BASE_URL: ${VITE_WS_BASE_URL:-http://localhost:8080/ws}
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - vama-net
+
+volumes:
+  mongo_data:
+
+networks:
+  vama-net:
+    driver: bridge
